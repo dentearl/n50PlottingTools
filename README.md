@@ -6,7 +6,7 @@ Scripts to create N50 plots from files containing lengths of sequences
 
 ## Dependencies
 * python >= 2.6
-* matplotlib
+* [matplotlib](http://matplotlib.sourceforge.net/)
 
 ## Installation
 1. Download the package.
