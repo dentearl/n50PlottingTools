@@ -32,7 +32,7 @@ progs := lengthsToN50Plot.py fastaLengthSummarizer.py
 all: $(foreach f,${progs}, ${bin}/$f)
 
 ${bin}/%: ${src}/%
-	mkdir -p $@
+	mkdir -p $(dir $@)
 	cp $^ $@.tmp
 	chmod 755 $@.tmp
 	mv $@.tmp $@
