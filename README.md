@@ -15,28 +15,28 @@ Scripts to create N50 plots from files containing lengths of sequences
 3. Type <code>make</code>.
 
 ## Usage
-lengthsToN50Plot.py --title=TITLE lengths1.txt lengths2.txt lengths3.txt ...
+<code>$ lengthsToN50Plot.py --title=TITLE lengths1.txt lengths2.txt lengths3.txt ... </code>
 
 lengthsToN50Plot.py takes as many lengths files as you offer, the size of the genome
 (--size), a title (--title) and then produces an N50 style figure.
 
+
 Options:
-  -h, --help            show this help message and exit
-  --genomeLength=GENOMELENGTH
-                        Total length of the genome.
-  --title=TITLE         Title of the plot.
-  --log                 Puts y axis into log scale. default=False
-  --n50Line             Adds straight lines from the y-axis to the curves. default=False
-  --xlabel=XLABEL       Label on the x-axis. default=Cumulative length proportional to genome length
-  --reportN50Values     prints n50 values to stdout. default=False
-  --dpi=DPI             Dots per inch of the output, if --outFormat is all or png. default=300
-  --outFormat=OUTFORMAT
-                        output format [pdf|png|all|eps]. default=pdf
-  --out=OUT             filename where figure will be created. No extension needed. default=myPlot
+
+* <code>-h, --help</code>            show this help message and exit
+* <code>--genomeLength=GENOMELENGTH</code>Total length of the genome.
+* <code>--title=TITLE</code>         Title of the plot.
+* <code>--log</code>                 Puts y axis into log scale. default=False
+* <code>--n50Line</code>             Adds straight lines from the y-axis to the curves. default=False
+* <code>--xlabel=XLABEL</code>       Label on the x-axis. default=Cumulative length proportional to genome length
+* <code>--reportN50Values</code>     prints n50 values to stdout. default=False
+* <code>--dpi=DPI</code>             Dots per inch of the output, if --outFormat is all or png. default=300
+* <code>--outFormat=OUTFORMAT</code> output format [pdf|png|all|eps]. default=pdf
+* <code>--out=OUT</code>             filename where figure will be created. No extension needed. default=myPlot
+
 
 ## Example
-<code>
-$ bin/fastaLengthSummarizer.py < genomeContigs.fa  > contigLengths.txt
-$ bin/fastaLengthSummarizer.py < genomeScaffolds.fa  > scaffoldLengths.txt
-$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line --log contigLengths.txt scaffoldLengths.txt
-</code>
+<code>$ bin/fastaLengthSummarizer.py < genomeContigs.fa  > contigLengths.txt</code>
+<code>$ bin/fastaLengthSummarizer.py < genomeScaffolds.fa  > scaffoldLengths.txt</code>
+<code>$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line --log contigLengths.txt scaffoldLengths.txt</code>
+
