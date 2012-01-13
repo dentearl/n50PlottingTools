@@ -86,7 +86,7 @@ def initOptions(parser):
                       help = 'output format [pdf|png|all|eps]. default=%default')
    parser.add_option('--out', dest = 'out', default = 'myPlot',
                       type = 'string',
-                      help = 'filename where figure will be created. No extension needed. default=%default')
+                      help = 'path/filename where figure will be created. No extension needed. default=%default')
    
 def checkOptions(options, args, parser):
    if len(args) is 0:

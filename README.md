@@ -6,7 +6,6 @@ Scripts to create N50 plots from files containing lengths of sequences
 
 ## Dependencies
 * python >= 2.6
-* numpy
 * matplotlib
 
 ## Installation
@@ -15,16 +14,15 @@ Scripts to create N50 plots from files containing lengths of sequences
 3. Type <code>make</code>.
 
 ## Usage
-<code>$ lengthsToN50Plot.py --title=TITLE lengths1.txt lengths2.txt lengths3.txt ... </code>
+<code>$ lengthsToN50Plot.py [options] lengths1.txt lengths2.txt lengths3.txt ... </code>
 
-lengthsToN50Plot.py takes as many lengths files as you offer, the size of the genome
-(--size), a title (--title) and then produces an N50 style figure.
+lengthsToN50Plot.py takes as many lengths files as you offer and then produces an N50 style figure.
 
 
 Options:
 
 * <code>-h, --help</code>            show this help message and exit
-* <code>--genomeLength=GENOMELENGTH</code>Total length of the genome.
+* <code>--genomeLength=GENOMELENGTH</code>Total length of the genome. default=Max of Sum of input file lengths.
 * <code>--title=TITLE</code>         Title of the plot.
 * <code>--log</code>                 Puts y axis into log scale. default=False
 * <code>--n50Line</code>             Adds straight lines from the y-axis to the curves. default=False
@@ -32,7 +30,7 @@ Options:
 * <code>--reportN50Values</code>     prints n50 values to stdout. default=False
 * <code>--dpi=DPI</code>             Dots per inch of the output, if --outFormat is all or png. default=300
 * <code>--outFormat=OUTFORMAT</code> output format [pdf|png|all|eps]. default=pdf
-* <code>--out=OUT</code>             filename where figure will be created. No extension needed. default=myPlot
+* <code>--out=OUT</code>             path/filename where figure will be created. No extension needed. default=myPlot
 
 
 ## Example
