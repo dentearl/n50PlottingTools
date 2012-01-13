@@ -46,19 +46,26 @@ import os
 import sys
 import re
 
-class Data:
-   """Dummy class to hold data to 
-   pass between functions
-   """
-   pass
+class SeqObj:
+    """ Used to hold the seq length information from one file
+    """
+    def __init__(self, name = '', lengths = None):
+        if lengths == None:
+            lengths = []
+        if not isinstance(lengths, list):
+            raise RuntimeError('Input `lengths\' must be of type list, not %s.' % lengths.__class__)
+        self.name = name
+        self.lengths = lengths
+        self.n = len(lengths)
+        self.xData = [] # paired one to one with the lengths attribute
 
 def initOptions(parser):
    parser.add_option('--genomeLength', dest = 'genomeLength',
                       type = 'float',
                       help = 'Total length of the genome.')
    parser.add_option('--title', dest = 'title',
-                      type = 'string',
-                      help = 'Title of the plot.')
+                      type = 'string', default = 'N-Statistics',
+                      help = 'Title of the plot. default=%default')
    parser.add_option('--log', dest = 'log', default = False,
                       action = 'store_true',
                       help = 'Puts y axis into log scale. default=%default')
@@ -87,8 +94,6 @@ def checkOptions(options, args, parser):
    for a in args:
       if not os.path.exists(a):
          parser.error('File %s does not exist.\n' % a)
-   if options.title is None:
-      parser.error('specify --title.\n')
    if options.dpi < 72:
       parser.error('--dpi %d less than screen res, 72. Must be >= 72.' % options.dpi)
    if options.outFormat not in ('pdf', 'png', 'eps', 'all'):
@@ -97,7 +102,7 @@ def checkOptions(options, args, parser):
         options.out.endswith('.eps')):
       options.out = options.out[:-4]
 
-def initImage(width, height, options, data):
+def initImage(width, height, options):
    """
    initImage takes a width and height and returns
    both a fig and pdf object. options must contain outFormat,
@@ -151,8 +156,8 @@ def establishAxis(fig, options):
 def findMin(data):
    minVal = sys.maxint
    for d in data:
-      if minVal > min(d['values']):
-         minVal = min(d['values'])
+      if minVal > min(d.lengths):
+         minVal = min(d.lengths)
    return minVal
 
 def drawData(data, ax, options):
@@ -167,32 +172,31 @@ def drawData(data, ax, options):
                 '#9467bd', # dark purple
                 '#c5b0d5'  # light purple
                 ]
+   lineStyleList = ['-', '--', '-.', ':']
+   lineStyleIndex = -1
    ax.set_title(options.title + ' N Stats')
    # create the N50 line
    globalMin = findMin(data)
    if options.n50Line:
       color50 = (0.4, 0.4, 0.4)
-      # vertical line
-      # ax.add_line(lines.Line2D(xdata=[0.5, 0.5],
-      #                            ydata=[globalMin,
-      #                                    scaffolds['values'][- sum(numpy.array(scaffolds['xData']) > 0.5)]],
-      #                            color=color50,
-      #                            linewidth= 0.75,
-      #                            linestyle= ':'))
       for d in data:
          # horizontal lines
-         ax.add_line(lines.Line2D(xdata=[0.0, 0.5],
-                                    ydata=[nValue(d, 0.5),
+         ax.add_line(lines.Line2D(xdata = [0.0, 0.5],
+                                  ydata = [nValue(d, 0.5),
                                            nValue(d, 0.5)],
-                                    color=color50,
-                                    linewidth= 0.75,
-                                    linestyle= ':'))
+                                  color = color50,
+                                  linewidth = 0.75,
+                                  linestyle = ':'))
    if options.reportN50Values:
       for d in data:
-         print '%9s n50: %d' % (d['name'], nValue(d, 0.5))
+         print '%9s n50: %d' % (d.name, nValue(d, 0.5))
    plots = []
    for i, d in enumerate(data, 0):
-      plots.append(ax.plot(d['xData'], d['values'], color = colorList[i]))
+      i %= len(colorList)
+      if i == 0 : lineStyleIndex = (lineStyleIndex + 1) % len(lineStyleList)
+      plots.append(ax.plot(d.xData, d.lengths, 
+                           color = colorList[i],
+                           linestyle = lineStyleList[lineStyleIndex]))
    for loc, spine in ax.spines.iteritems():
       if loc in ['left','bottom']:
          spine.set_position(('outward',10)) # outward by 10 points
@@ -213,41 +217,39 @@ def drawData(data, ax, options):
    ax.yaxis.set_ticks_position('left')
    plt.xlabel(options.xlabel)
    
-   leg = plt.legend(plots, map(lambda x: x['name'], data))
-   plt.setp(leg.get_texts(), fontsize = 'small') # legend fontsize
-   leg._drawFrame=False
+   leg = plt.legend(plots, map(lambda x: x.name, data))
+   plt.setp(leg.get_texts(), fontsize = 'x-small') # legend fontsize
+   leg._drawFrame = False
 
 def nValue(a, x):
    """ given a dict populated as the processData returned dicts, `a' 
    and a a float x in the range (0, 1.0) nValue returns the Nx value
    """
-   if not isinstance(a, dict):
-      raise RuntimeError('Type of `a\' must be dict, not %s' % x.__class__)
+   if not isinstance(a, SeqObj):
+      raise RuntimeError('Type of `a\' must be SeqObj, not %s' % x.__class__)
    if not isinstance(x, float):
       raise RuntimeError('Type of `x\' must be float, not %s' % x.__class__)
    if not (0.0 < x < 1.0):
       raise RuntimeError('Value of `x\' must be in (0.0, 1.0), not %f' % x)
-   return a['values'][- sum(numpy.array(a['xData']) > x)]
+   return a.lengths[- sum(numpy.array(a.xData) > x)]
 
 def processData(lengthsList, options):
    data = []
    for l in lengthsList:
-      l['values'].sort(reverse = True)
-      d = {'name'  : l['name'],
-           'values': l['values'],
-           'xData' : []}
+      l.lengths.sort(reverse = True)
+      d = SeqObj(l.name, l.lengths)
       cum = 0
-      for i in xrange(0, len(l['values'])):
-         cum += l['values'][i]
+      for i in xrange(0, l.n):
+         cum += l.lengths[i]
          if options.genomeLength is not None:
-            d['xData'].append(float(cum) / float(options.genomeLength))
+            d.xData.append(float(cum) / float(options.genomeLength))
          else:
-            d['xData'].append(float(cum))
+            d.xData.append(float(cum))
       data.append(d)
 
    if options.genomeLength is None:
-      options.genomeLength = max(map(lambda x: x['xData'][-1], data))
-      for d in map(lambda x: x['xData'], data):
+      options.genomeLength = max(map(lambda x: x.xData[-1], data))
+      for d in map(lambda x: x.xData, data):
          for i, e in enumerate(d, 0):
             d[i] = e / float(options.genomeLength)
    return data
@@ -256,7 +258,6 @@ def main():
    usage = ('usage: %prog --size=N --title=TITLE lengths1.txt lengths2.txt lengths3.txt ...\n\n'
              '%prog takes as many lengths files as you offer, the size of the genome\n'
              '(--size), a title (--title) and then produces an N50 style figure.')
-   data = Data()
    parser = OptionParser(usage=usage)
    initOptions(parser)
 
@@ -265,13 +266,12 @@ def main():
    
    lengths = []
    for a in args:
-      lengths.append({'name' : a,
-                      'values': readFile(a)})
+      lengths.append(SeqObj(a, readFile(a)))
    
    data = processData(lengths, options)
-   fig, pdf = initImage(8.0, 5.0, options, data)
+
+   fig, pdf = initImage(8.0, 5.0, options)
    ax = establishAxis(fig, options)
-   
    drawData(data, ax, options)
    writeImage(fig, pdf, options)
 
