@@ -9,12 +9,8 @@ in the fasta. --names option prints names and lengths, one
 per line.
 """
 ##############################
-# Copyright (C) 2009-2011 by 
+# Copyright (C) 2009-2012 by 
 # Dent Earl (dearl@soe.ucsc.edu, dent.earl@gmail.com)
-# Benedict Paten (benedict@soe.ucsc.edu, benedict.paten@gmail.com)
-# Mark Diekhans (markd@soe.ucsc.edu)
-# ... and other members of the Reconstruction Team of David Haussler's 
-# lab (BME Dept. UCSC).
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +57,7 @@ def main():
               'then prints out the lengths of sequences contained in the \n'
               'fasta, one length per line of STDOUT. If --names is \n'
               'specified, sequence names are printed next to their length.')
-    parser = OptionParser(usage=usage)
+    parser = OptionParser(usage = usage)
     initOptions(parser)
     options, args = parser.parse_args()
     checkOptions(options)
