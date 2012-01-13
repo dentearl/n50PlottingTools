@@ -5,7 +5,7 @@ lengthsToN50Plot.py
 dent earl, dearl(a)soe ucsc edu
 
 This script takes an arbitrary number of files which consist of lengths, 
-one per line, and a genome length, and it then produces a figure showing 
+one per line, and it then produces a figure showing 
 the cumulative plot of the N statistics for the files.
 
 """
@@ -62,7 +62,7 @@ class SeqObj:
 def initOptions(parser):
    parser.add_option('--genomeLength', dest = 'genomeLength',
                       type = 'float',
-                      help = 'Total length of the genome.')
+                      help = 'Total length of the genome. default=Max of Sum of input file lengths.')
    parser.add_option('--title', dest = 'title',
                       type = 'string', default = 'N-Statistics',
                       help = 'Title of the plot. default=%default')
@@ -255,9 +255,9 @@ def processData(lengthsList, options):
    return data
 
 def main():
-   usage = ('usage: %prog --size=N --title=TITLE lengths1.txt lengths2.txt lengths3.txt ...\n\n'
-             '%prog takes as many lengths files as you offer, the size of the genome\n'
-             '(--size), a title (--title) and then produces an N50 style figure.')
+   usage = ('usage: %prog [options] lengths1.txt lengths2.txt lengths3.txt ...\n\n'
+             '%prog takes as many lengths files as you offer, some options\n'
+             'and then produces an N50 style figure.')
    parser = OptionParser(usage=usage)
    initOptions(parser)
 
