@@ -37,5 +37,6 @@ Options:
 <code>$ bin/fastaLengthSummarizer.py < genomeContigs.fa  > contigLengths.txt</code>
 <code>$ bin/fastaLengthSummarizer.py < genomeScaffolds.fa  > scaffoldLengths.txt</code>
 <code>$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line --log contigLengths.txt scaffoldLengths.txt</code>
+<code>$ bin/lengthsToN50Plot.py --outFormat png --genomeLength 2800000000 --title 'Genome assemblies' --log --n50Line --xlabel 'Cumulative length proportional to G (2.8Gb)' --out n50PlottingToolsDemoPicSmall --reportN50Values assembly01Stats/contigLengths.txt assembly01Stats/scaffoldLengths.txt assembly02Stats/contigLengths.txt assembly02Stats/scaffoldLengths.txt assembly02aStats/scaffoldLengths.txt</code>
 
 ![Example image](http://compbio.soe.ucsc.edu/assemblathon1/n50PlottingToolsDemoPicSmall.png)
