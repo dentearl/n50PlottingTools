@@ -38,3 +38,4 @@ Options:
 <code>$ bin/fastaLengthSummarizer.py < genomeScaffolds.fa  > scaffoldLengths.txt</code>
 <code>$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line --log contigLengths.txt scaffoldLengths.txt</code>
 
+![Example image](http://compbio.soe.ucsc.edu/assemblathon1/n50PlottingToolsDemoPicSmall.png)
