@@ -35,6 +35,8 @@ the cumulative plot of the N statistics for the files.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 ##############################
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.lines as lines
 import matplotlib.patches as patches
 import matplotlib.pylab  as pylab
@@ -109,7 +111,6 @@ def initImage(width, height, options):
    and dpi
    """
    import matplotlib.backends.backend_pdf as pltBack
-   import matplotlib.pyplot as plt
    pdf = None
    if options.outFormat == 'pdf' or options.outFormat == 'all':
       pdf = pltBack.PdfPages(options.out + '.pdf')
@@ -172,6 +173,7 @@ def drawData(data, ax, options):
                 '#9467bd', # dark purple
                 '#c5b0d5'  # light purple
                 ]
+   labels = map(lambda x: x.name, data)
    lineStyleList = ['-', '--', '-.', ':']
    lineStyleIndex = -1
    ax.set_title(options.title + ' N Stats')
@@ -190,13 +192,13 @@ def drawData(data, ax, options):
    if options.reportN50Values:
       for d in data:
          print '%9s n50: %d' % (d.name, nValue(d, 0.5))
-   plots = []
    for i, d in enumerate(data, 0):
       i %= len(colorList)
       if i == 0 : lineStyleIndex = (lineStyleIndex + 1) % len(lineStyleList)
-      plots.append(ax.plot(d.xData, d.lengths, 
+      ax.plot(d.xData, d.lengths, 
                            color = colorList[i],
-                           linestyle = lineStyleList[lineStyleIndex]))
+                           linestyle = lineStyleList[lineStyleIndex],
+                           label = labels[i])
    for loc, spine in ax.spines.iteritems():
       if loc in ['left','bottom']:
          spine.set_position(('outward',10)) # outward by 10 points
@@ -216,8 +218,8 @@ def drawData(data, ax, options):
    ax.xaxis.set_ticks_position('bottom')
    ax.yaxis.set_ticks_position('left')
    plt.xlabel(options.xlabel)
-   
-   leg = plt.legend(plots, map(lambda x: x.name, data))
+   handles, labels = ax.get_legend_handles_labels()
+   leg = plt.legend(handles, labels)
    plt.setp(leg.get_texts(), fontsize = 'x-small') # legend fontsize
    leg._drawFrame = False
 
