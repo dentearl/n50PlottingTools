@@ -184,7 +184,7 @@ def drawData(data, ax, options):
     labels = map(lambda x: x.name, data)
     lineStyleList = ['-', '--', '-.', ':']
     lineStyleIndex = -1
-    ax.set_title(options.title + ' N Stats')
+    ax.set_title(options.title)
     # create the N50 line
     globalMin = findMin(data)
     if options.n50Line:
