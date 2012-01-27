@@ -257,11 +257,11 @@ def processData(lengthsList, options):
                 d.xData.append(float(cum))
         data.append(d)
 
-     if options.genomeLength is None:
-         options.genomeLength = max(map(lambda x: x.xData[-1], data))
-         for d in map(lambda x: x.xData, data):
-             for i, e in enumerate(d, 0):
-                 d[i] = e / float(options.genomeLength)
+    if options.genomeLength is None:
+        options.genomeLength = max(map(lambda x: x.xData[-1], data))
+        for d in map(lambda x: x.xData, data):
+            for i, e in enumerate(d, 0):
+                d[i] = e / float(options.genomeLength)
     return data
 
 def main():
