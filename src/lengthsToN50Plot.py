@@ -48,8 +48,8 @@ import os
 import sys
 import re
 
-class SeqObj:
-    """ Used to hold the seq length information from one file
+class LengthObj:
+    """ Used to hold the length length information from one file
     """
     def __init__(self, name = '', lengths = None):
         if lengths is None:
@@ -57,7 +57,7 @@ class SeqObj:
         if not isinstance(lengths, list):
             raise RuntimeError('Input `lengths\' must be of type list, not %s.' % lengths.__class__)
         self.name = name
-        self.lengths = lengths
+        self.lengths = numpy.array(lengths, dtype = numpy.uint32)
         self.n = len(lengths)
         self.xData = [] # paired one to one with the lengths attribute
 
@@ -68,7 +68,7 @@ def initOptions(parser):
     parser.add_option('--title', dest = 'title',
                       type = 'string', default = 'N-Statistics',
                       help = 'Title of the plot. default=%default')
-    parser.add_option('--linear', dest = 'linear', default = True,
+    parser.add_option('--linear', dest = 'linear', default = False,
                       action = 'store_true',
                       help = 'Puts y axis into linear scale. default=%default')
     parser.add_option('--n50Line', dest = 'n50Line', default = False,
@@ -146,6 +146,7 @@ def readFile(filename):
     f = open(filename, 'r')
     for line in f:
         line = line.strip()
+        assert(int(line) < 4294967296) # numpy.uint32
         d.append(int(line))
     f.close()
     return d
@@ -208,7 +209,7 @@ def drawData(data, ax, options):
                 label = labels[i])
     for loc, spine in ax.spines.iteritems():
         if loc in ['left','bottom']:
-            spine.set_position(('outward',10)) # outward by 10 points
+            spine.set_position(('outward', 10)) # outward by 10 points
         elif loc in ['right','top']:
             spine.set_color('none') # don't draw spine               
         else:
@@ -216,7 +217,7 @@ def drawData(data, ax, options):
 
     if options.log:
         ax.set_yscale('log')
-        ax.yaxis.set_minor_locator(LogLocator(base = 10, subs = range(1,10)))
+        ax.yaxis.set_minor_locator(LogLocator(base = 10, subs = range(1, 10)))
     plt.ylabel('Length')
 
     ax.set_xticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
@@ -234,51 +235,52 @@ def nValue(a, x):
     """ given a dict populated as the processData returned dicts, `a' 
     and a a float x in the range (0, 1.0) nValue returns the Nx value
     """
-    if not isinstance(a, SeqObj):
-        raise RuntimeError('Type of `a\' must be SeqObj, not %s' % x.__class__)
+    if not isinstance(a, LengthObj):
+        raise RuntimeError('Type of `a\' must be LengthObj, not %s' % x.__class__)
     if not isinstance(x, float):
         raise RuntimeError('Type of `x\' must be float, not %s' % x.__class__)
     if not (0.0 < x < 1.0):
         raise RuntimeError('Value of `x\' must be in (0.0, 1.0), not %f' % x)
     return a.lengths[- sum(numpy.array(a.xData) > x)]
 
-def processData(lengthsList, options):
+def processData(lengthObjList, options):
+    """ processData() takes the list of LengthObjs and sorts
+    their lengths, if necessary, 
+    """
     data = []
-    for l in lengthsList:
+    for l in lengthObjList:
         if not options.preSorted:
-            l.lengths.sort(reverse = True)
-        d = SeqObj(l.name, l.lengths)
-        cum = 0
-        for i in xrange(0, l.n):
-            cum += l.lengths[i]
-            if options.genomeLength is not None:
-                d.xData.append(float(cum) / float(options.genomeLength))
-            else:
-                d.xData.append(float(cum))
-        data.append(d)
+            l.lengths.sort()
+            l.lengths = l.lengths[::-1] # reverse
+            
+        if options.genomeLength is not None:
+            l.xData = numpy.cumsum(l.lengths, dtype = numpy.float32) / float(options.genomeLength)
+        else:
+            l.xData = numpy.cumsum(l.lengths, dtype = numpy.float32)
+        data.append(l)
 
     if options.genomeLength is None:
         options.genomeLength = max(map(lambda x: x.xData[-1], data))
-        for d in map(lambda x: x.xData, data):
-            for i, e in enumerate(d, 0):
-                d[i] = e / float(options.genomeLength)
+        for d in data:
+            d.xData /= float(options.genomeLength)
     return data
 
 def main():
     usage = ('usage: %prog [options] lengths1.txt lengths2.txt lengths3.txt ...\n\n'
              '%prog takes as many lengths files as you offer, some options\n'
-             'and then produces an N50 style figure.')
+             'and then produces a figure showing all N-values.')
     parser = OptionParser(usage=usage)
     initOptions(parser)
 
     options, args = parser.parse_args()
     checkOptions(options, args, parser)
     
-    lengths = []
+    lengthObjList = []
     for a in args:
-        lengths.append(SeqObj(a, readFile(a)))
+        # each input length file is transformed into a LengthObj
+        lengthObjList.append(LengthObj(a, readFile(a)))
    
-    data = processData(lengths, options)
+    data = processData(lengthObjList, options)
 
     fig, pdf = initImage(8.0, 5.0, options)
     ax = establishAxis(fig, options)
