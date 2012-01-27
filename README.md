@@ -24,8 +24,9 @@ Options:
 * <code>-h, --help</code>            show this help message and exit
 * <code>--genomeLength=GENOMELENGTH</code>Total length of the genome. default=Max of Sum of input file lengths.
 * <code>--title=TITLE</code>         Title of the plot.
-* <code>--log</code>                 Puts y axis into log scale. default=False
+* <code>--linear</code>              Puts y axis into linear scale. default=False
 * <code>--n50Line</code>             Adds straight lines from the y-axis to the curves. default=False
+* <code>--preSorted</code>           Assumes inputs are sorted largest to smallest. default=False
 * <code>--xlabel=XLABEL</code>       Label on the x-axis. default=Cumulative length proportional to genome length
 * <code>--reportN50Values</code>     prints n50 values to stdout. default=False
 * <code>--dpi=DPI</code>             Dots per inch of the output, if --outFormat is all or png. default=300
@@ -37,10 +38,10 @@ Options:
 
 <code>$ bin/fastaLengthSummarizer.py < genomeContigs.fa  > contigLengths.txt</code>  
 <code>$ bin/fastaLengthSummarizer.py < genomeScaffolds.fa  > scaffoldLengths.txt</code>  
-<code>$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line --log contigLengths.txt scaffoldLengths.txt</code>  
+<code>$ bin/lengthsToN50Plot.py --title "My genome's N-stats" --n50Line contigLengths.txt scaffoldLengths.txt</code>  
 
     $ bin/lengthsToN50Plot.py --outFormat png --genomeLength 2800000000 --title 'Genome assemblies' \
-    --log --n50Line --xlabel 'Cumulative length proportional to G (2.8Gb)' \
+     --n50Line --xlabel 'Cumulative length proportional to G (2.8Gb)' \
     --out n50PlottingToolsDemoPicSmall --reportN50Values \
     assembly01Stats/contigLengths.txt assembly01Stats/scaffoldLengths.txt \
     assembly02Stats/contigLengths.txt assembly02Stats/scaffoldLengths.txt \
