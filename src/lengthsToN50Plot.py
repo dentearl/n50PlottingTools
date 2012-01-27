@@ -52,7 +52,7 @@ class SeqObj:
     """ Used to hold the seq length information from one file
     """
     def __init__(self, name = '', lengths = None):
-        if lengths == None:
+        if lengths is None:
             lengths = []
         if not isinstance(lengths, list):
             raise RuntimeError('Input `lengths\' must be of type list, not %s.' % lengths.__class__)
