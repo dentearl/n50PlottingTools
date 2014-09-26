@@ -4,29 +4,29 @@ lengthsToN50Plot.py
 12 January 2012
 dent earl, dearl(a)soe ucsc edu
 
-This script takes an arbitrary number of files which consist of lengths, 
-one per line, and it then produces a figure showing 
+This script takes an arbitrary number of files which consist of lengths,
+one per line, and it then produces a figure showing
 the cumulative plot of the N statistics for the files.
 
 """
 ##############################
-# Copyright (C) 2009-2011 by 
+# Copyright (C) 2009-2011 by
 # Dent Earl (dearl@soe.ucsc.edu, dent.earl@gmail.com)
 # Benedict Paten (benedict@soe.ucsc.edu, benedict.paten@gmail.com)
 # Mark Diekhans (markd@soe.ucsc.edu)
-# ... and other members of the Reconstruction Team of David Haussler's 
+# ... and other members of the Reconstruction Team of David Haussler's
 # lab (BME Dept. UCSC).
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,6 +37,10 @@ the cumulative plot of the N statistics for the files.
 ##############################
 import matplotlib
 matplotlib.use('Agg')
+#####
+# the param pdf.fonttype allows for text to be editable in Illustrator.
+# Use either Output Type 3 (Type3) or Type 42 (TrueType)
+matplotlib.rcParams['pdf.fonttype'] = 42
 import matplotlib.backends.backend_pdf as pltBack
 import matplotlib.lines as lines
 import matplotlib.patches as patches
@@ -49,6 +53,7 @@ import os
 import sys
 import re
 
+
 class LengthObj:
     """ Used to hold the length length information from one file
     """
@@ -56,48 +61,55 @@ class LengthObj:
         if lengths is None:
             lengths = []
         if not isinstance(lengths, numpy.ndarray):
-            raise RuntimeError('Input `lengths\' must be of type numpy.ndarray, not %s.' % lengths.__class__)
+            raise RuntimeError('Input `lengths\' must be of type '
+                               'numpy.ndarray, not %s.' % lengths.__class__)
         self.name = name
         self.lengths = lengths
         self.n = numpy.alen(lengths)
         if not preSorted:
             self.lengths = numpy.sort(self.lengths)
             self.lengths = self.lengths[::-1] # reverse
-        self.xData = numpy.cumsum(self.lengths, dtype=numpy.float64) # paired one-to-one with lengths
+        # xData is paired one-to-one with lengths
+        self.xData = numpy.cumsum(self.lengths, dtype=numpy.float64)
 
 def initOptions(parser):
-    parser.add_option('--genomeLength', dest='genomeLength',
-                      type='float',
-                      help='Total length of the genome. default=Max of Sum of input file lengths.')
+    parser.add_option(
+        '--genomeLength', dest='genomeLength', type='float',
+        help=('Total length of the genome. default=Max of sum of '
+              'input file lengths.'))
     parser.add_option('--title', dest='title',
                       type='string', default='N-Statistics',
                       help='Title of the plot. default=%default')
     parser.add_option('--linear', dest='linear', default=False,
                       action='store_true',
                       help='Puts y axis into linear scale. default=%default')
-    parser.add_option('--n50Line', dest='n50Line', default=False,
-                      action='store_true',
-                      help=('Adds straight lines from the y-axis to the curves. default=%default'))
-    parser.add_option('--xlabel', dest='xlabel',
-                      type='string', default='Cumulative length proportional to genome length',
-                      help='Label on the x-axis. default=%default')
+    parser.add_option(
+        '--n50Line', dest='n50Line', default=False, action='store_true',
+        help=('Adds straight lines from the y-axis to the curves. '
+              'default=%default'))
+    parser.add_option(
+        '--xlabel', dest='xlabel', type='string',
+        default='Cumulative length proportional to genome length',
+        help='Label on the x-axis. default=%default')
     parser.add_option('--reportN50Values', dest='reportN50Values',
                       default=False, action='store_true',
                       help='prints n50 values to stdout. default=%default')
-    parser.add_option('--preSorted', dest='preSorted', default=False,
-                      action='store_true',
-                      help=('Switches off the sort step, this can help with enormous numbers of '
-                              'reads. default=%default'))
-    parser.add_option('--dpi', dest='dpi', default=300,
-                      type='int',
-                      help='Dots per inch of the output, if --outFormat is all or png. default=%default')
+    parser.add_option(
+        '--preSorted', dest='preSorted', default=False, action='store_true',
+        help=('Switches off the sort step, this can help with enormous numbers '
+              'of reads. default=%default'))
+    parser.add_option(
+        '--dpi', dest='dpi', default=300, type='int',
+        help=('Dots per inch of the output, if --outFormat is all or png. '
+              'default=%default'))
     parser.add_option('--outFormat', dest='outFormat', default='pdf',
                       type='string',
                       help='output format [pdf|png|all|eps]. default=%default')
-    parser.add_option('--out', dest='out', default='myPlot',
-                      type='string',
-                      help='path/filename where figure will be created. No extension needed. default=%default')
-   
+    parser.add_option(
+        '--out', dest='out', default='myPlot', type='string',
+        help=('path/filename where figure will be created. '
+              'No extension needed. default=%default'))
+
 def checkOptions(options, args, parser):
     options.log = True
     if options.linear:
@@ -108,10 +120,12 @@ def checkOptions(options, args, parser):
         if not os.path.exists(a):
             parser.error('File %s does not exist.\n' % a)
     if options.dpi < 72:
-        parser.error('--dpi %d less than screen res, 72. Must be >= 72.' % options.dpi)
+        parser.error('--dpi %d less than screen res, 72. Must be >= 72.'
+                     % options.dpi)
     if options.outFormat not in ('pdf', 'png', 'eps', 'all'):
-        parser.error('Unrecognized output format: %s. Choose one from: pdf png eps all.' % options.outFormat)
-    if (options.out.endswith('.png') or options.out.endswith('.pdf') or 
+        parser.error('Unrecognized output format: %s. Choose one from: '
+                     'pdf png eps all.' % options.outFormat)
+    if (options.out.endswith('.png') or options.out.endswith('.pdf') or
         options.out.endswith('.eps')):
         options.out = options.out[:-4]
 
@@ -171,7 +185,7 @@ def drawData(data, ax, options):
                  '#ff7f0e', # bright orange
                  '#ffbb78', # light orange
                  '#4B4C5E', # dark slate gray
-                 '#9edae5', # light blue 
+                 '#9edae5', # light blue
                  '#7F80AB', # purple-ish slate blue
                  '#c7c7c7', # light gray
                  '#9467bd', # dark purple
@@ -199,19 +213,19 @@ def drawData(data, ax, options):
             print '%9s cumlen: %10d' % (d.name, numpy.sum(d.lengths))
             for n in [10, 50, 90, 95]:
                 print '%9s %6s: %10d' % (d.name, 'n%d' % n, nValue(d, n / 100.0))
-            
+
     for i, d in enumerate(data, 0):
-        i %= len(colorList)
-        if i == 0 : lineStyleIndex = (lineStyleIndex + 1) % len(lineStyleList)
-        ax.plot(d.xData, d.lengths, 
-                color = colorList[i],
+        j = i % len(colorList)
+        if j == 0 : lineStyleIndex = (lineStyleIndex + 1) % len(lineStyleList)
+        ax.plot(d.xData, d.lengths,
+                color = colorList[j],
                 linestyle = lineStyleList[lineStyleIndex],
                 label = labels[i])
     for loc, spine in ax.spines.iteritems():
         if loc in ['left','bottom']:
             spine.set_position(('outward', 10)) # outward by 10 points
         elif loc in ['right','top']:
-            spine.set_color('none') # don't draw spine               
+            spine.set_color('none') # don't draw spine
         else:
             raise ValueError('unknown spine location: %s' % loc)
 
@@ -232,11 +246,12 @@ def drawData(data, ax, options):
     leg._drawFrame = False
 
 def nValue(a, x):
-    """ given a dict populated as the processData returned dicts, `a' 
+    """ given a dict populated as the processData returned dicts, `a'
     and a a float x in the range (0, 1.0) nValue returns the Nx value
     """
     if not isinstance(a, LengthObj):
-        raise RuntimeError('Type of `a\' must be LengthObj, not %s' % x.__class__)
+        raise RuntimeError('Type of `a\' must be LengthObj, not %s'
+                           % x.__class__)
     if not isinstance(x, float):
         raise RuntimeError('Type of `x\' must be float, not %s' % x.__class__)
     if not (0.0 < x < 1.0):
@@ -248,7 +263,7 @@ def nValue(a, x):
 
 def processData(lengthObjList, options):
     """ processData() takes the list of LengthObjs and sorts
-    their lengths, if necessary, 
+    their lengths, if necessary,
     """
     if options.genomeLength is None:
         options.genomeLength = max(map(lambda x: x.xData[-1], lengthObjList))
@@ -256,7 +271,8 @@ def processData(lengthObjList, options):
         l.xData = numpy.divide(l.xData, float(options.genomeLength))
 
 def main():
-    usage = ('usage: %prog [options] lengths1.txt lengths2.txt lengths3.txt ...\n\n'
+    usage = ('usage: %prog [options] lengths1.txt lengths2.txt lengths3.txt '
+             '...\n\n'
              '%prog takes as many lengths files as you offer, some options\n'
              'and then produces a figure showing all N-values.')
     parser = OptionParser(usage=usage)
@@ -264,12 +280,12 @@ def main():
 
     options, args = parser.parse_args()
     checkOptions(options, args, parser)
-    
+
     lengthObjList = []
     for a in args:
         # each input length file is transformed into a LengthObj
         lengthObjList.append(LengthObj(a, readFile(a), options.preSorted))
-   
+
     processData(lengthObjList, options)
 
     fig, pdf = initImage(8.0, 5.0, options)
